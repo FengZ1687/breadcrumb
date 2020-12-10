@@ -1,37 +1,47 @@
 import root from './dirStruc'
 import './App.css';
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import Dirpath from './components/Dirpath'
 
 function App() {
   const [path, setPath] = useState(['root']);
-  function getContent(){
-    let obj = root
-    for (var i=1,len=path.length; i<len; i++){
-      obj = obj['children'][path[i]];
-    };
-    return handleContentdisplay(obj);
-  }
-  // for file there is a ~ sign and for directory there is a - sign
-  function handleContentdisplay(obj){
-   if(obj.type==="dir"){
-     if(!obj.hasOwnProperty('children')){
-      return `directory empty`;
-     }
-     return  Object.keys(obj.children).map((file)=>(
-     <div>
-       <span>{obj.children[file].type==='file'?'~':'-'}</span>
-       <span onClick={()=>setPath([...path,file])}>{file}</span>    
-     </div>
-      ));
-   }
-   else if (obj.type==="file"){
-     return `this is a file:${path[path.length-1]}`;
-   }
-   else{
-     return `Directory path not exist error`;
-   }
+  const [content, setContent] = useState({ type: "", children:[] });
 
+  useEffect(() => {
+    getContent(path.join("/"))
+  }, [path] );
+
+  const getContent = async (pathStr)=>{
+    pathStr = pathStr.split("/")
+    let obj = root
+    for (var i=1,len=pathStr.length; i<len; i++){
+      obj = obj['children'][pathStr[i]];
+    };
+    if(obj.type==="dir"){
+        setContent({ type: "dir", children:Object.keys(obj.children) }); 
+    }
+    else if (obj.type==="file"){
+      setContent({ type: "file", children:[path[path.length-1]] });
+    }
+    else{
+      setContent({ type: "error", children:[]});;
+    }
+  }
+
+  function displayContent(){
+    if(content.type==="dir"){
+        return  content.children.map((file)=>(
+      <div>
+        <span onClick={()=>setPath([...path,file])}>{file}</span>    
+      </div>
+       ));
+    }
+    else if(content.type==="file"){
+      return`this is a file:${path[path.length-1]}`;
+    }
+    else {
+      return null
+    }
   }
 
   function gotoDir(index){
@@ -41,7 +51,7 @@ function App() {
     <div className="App">
       <Dirpath path={path} onChange={gotoDir}/>
       <div>
-      {getContent()}
+      {displayContent()}
       </div>
     </div>
   );
