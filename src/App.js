@@ -6,12 +6,14 @@ import Dirpath from './components/Dirpath'
 function App() {
   const [path, setPath] = useState(['root']);
   const [content, setContent] = useState({ type: "", children:[] });
-
+  const [clickable,setclickable] = useState(true);
   useEffect(() => {
     getContent(path.join("/"))
   }, [path] );
 
   const getContent = async (pathStr)=>{
+    setclickable(false)
+    setTimeout(() => {
     pathStr = pathStr.split("/")
     let obj = root
     for (var i=1,len=pathStr.length; i<len; i++){
@@ -26,13 +28,15 @@ function App() {
     else{
       setContent({ type: "error", children:[]});;
     }
+    setclickable(true)
+  }, 1000);
   }
 
   function displayContent(){
     if(content.type==="dir"){
         return  content.children.map((file)=>(
       <div>
-        <span onClick={()=>setPath([...path,file])}>{file}</span>    
+        <span onClick={()=>gotopath(file)}>{file}</span>    
       </div>
        ));
     }
@@ -41,6 +45,12 @@ function App() {
     }
     else {
       return null
+    }
+  }
+
+  function gotopath (file){
+    if(clickable){
+      setPath([...path,file])
     }
   }
 
